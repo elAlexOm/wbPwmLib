@@ -3,34 +3,271 @@
 *		\author	Alex
 *		\date		29.07.2020
 *
-* Библиотека для работы с ШИМ на STM32F0
+* Р‘РёР±Р»РёРѕС‚РµРєР° РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РЁРРњ РЅР° STM32F0
 *
-* Предположим, что мы производим устройства с ШИМ-выходами, для управления светильниками и другим оборудованием. Эти устройства имеют несколько выходов. Они построены на микроконтроллере STM32F030K6.
-* Все выходы ШИМ инженер-схемотехник всегда заводил на выходы TIMx_CHx. Однако на разных устройствах разное количество выходов, и подключены они в разном порядке и к разным ножкам микроконтроллера.
-* устройства     перечень выходов (1-N)
+* РџСЂРµРґРїРѕР»РѕР¶РёРј, С‡С‚Рѕ РјС‹ РїСЂРѕРёР·РІРѕРґРёРј СѓСЃС‚СЂРѕР№СЃС‚РІР° СЃ РЁРРњ-РІС‹С…РѕРґР°РјРё, РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРІРµС‚РёР»СЊРЅРёРєР°РјРё Рё РґСЂСѓРіРёРј РѕР±РѕСЂСѓРґРѕРІР°РЅРёРµРј. 
+* Р­С‚Рё СѓСЃС‚СЂРѕР№СЃС‚РІР° РёРјРµСЋС‚ РЅРµСЃРєРѕР»СЊРєРѕ РІС‹С…РѕРґРѕРІ. РћРЅРё РїРѕСЃС‚СЂРѕРµРЅС‹ РЅР° РјРёРєСЂРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂРµ STM32F030K6.
+* Р’СЃРµ РІС‹С…РѕРґС‹ РЁРРњ РёРЅР¶РµРЅРµСЂ-СЃС…РµРјРѕС‚РµС…РЅРёРє РІСЃРµРіРґР° Р·Р°РІРѕРґРёР» РЅР° РІС‹С…РѕРґС‹ TIMx_CHx. 
+* РћРґРЅР°РєРѕ РЅР° СЂР°Р·РЅС‹С… СѓСЃС‚СЂРѕР№СЃС‚РІР°С… СЂР°Р·РЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РІС‹С…РѕРґРѕРІ, Рё РїРѕРґРєР»СЋС‡РµРЅС‹ РѕРЅРё РІ СЂР°Р·РЅРѕРј РїРѕСЂСЏРґРєРµ Рё Рє СЂР°Р·РЅС‹Рј РЅРѕР¶РєР°Рј РјРёРєСЂРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂР°.
+* СѓСЃС‚СЂРѕР№СЃС‚РІР° РїРµСЂРµС‡РµРЅСЊ РІС‹С…РѕРґРѕРІ (1-N)
 * WB-PWM2      PA10 PA11
 * WB-PWM4      PA6 PA10 PA8 PA7
 * WB-PWM8      PB14 PB7 PA6 PA10 PA8 PA7 PB1 PB4
-* Нам нужно сделать прошивки для каждого из этих трёх устройств. Прошивки должны использовать одну библиотеку для управления выходами. Ваша задача - реализовать эту библиотеку.
-* Выходы должны описываться в универсальном формате, чтобы библиотеку можно было использовать и с другими устройствами. 
-* Частота и разрядность ШИМ должна быть одинаковая на всех выходах. 
-* Управление выходами должно происходить через функцию вида: pwm_out_set(uint8_t channel_index, uint16_t value)
-* Нужно сделать тестовую прошивку, которая будет демонстрировать использование библиотеки. Реализовать возможность сборки прошивки для каждого устройства. 
-* Что должно получиться в результате:
-* Библиотека для ШИМ в git репозитории с README с примером использования и инструкциями по сборке
-* Демонстрационная прошивка для WB-PWM*, использующая библиотеку в git репозитории с тремя таргетами: под WB-PWM2, WB-PWM4, WB-PWM8
-* с README с описанием сборки и добавления нового таргета
+* РќР°Рј РЅСѓР¶РЅРѕ СЃРґРµР»Р°С‚СЊ РїСЂРѕС€РёРІРєРё РґР»СЏ РєР°Р¶РґРѕРіРѕ РёР· СЌС‚РёС… С‚СЂС‘С… СѓСЃС‚СЂРѕР№СЃС‚РІ. РџСЂРѕС€РёРІРєРё РґРѕР»Р¶РЅС‹ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РѕРґРЅСѓ Р±РёР±Р»РёРѕС‚РµРєСѓ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РІС‹С…РѕРґР°РјРё. 
+* Р’Р°С€Р° Р·Р°РґР°С‡Р° - СЂРµР°Р»РёР·РѕРІР°С‚СЊ СЌС‚Сѓ Р±РёР±Р»РёРѕС‚РµРєСѓ.
+* Р’С‹С…РѕРґС‹ РґРѕР»Р¶РЅС‹ РѕРїРёСЃС‹РІР°С‚СЊСЃСЏ РІ СѓРЅРёРІРµСЂСЃР°Р»СЊРЅРѕРј С„РѕСЂРјР°С‚Рµ, С‡С‚РѕР±С‹ Р±РёР±Р»РёРѕС‚РµРєСѓ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Рё СЃ РґСЂСѓРіРёРјРё СѓСЃС‚СЂРѕР№СЃС‚РІР°РјРё. 
+* Р§Р°СЃС‚РѕС‚Р° Рё СЂР°Р·СЂСЏРґРЅРѕСЃС‚СЊ РЁРРњ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РѕРґРёРЅР°РєРѕРІР°СЏ РЅР° РІСЃРµС… РІС‹С…РѕРґР°С…. 
+* РЈРїСЂР°РІР»РµРЅРёРµ РІС‹С…РѕРґР°РјРё РґРѕР»Р¶РЅРѕ РїСЂРѕРёСЃС…РѕРґРёС‚СЊ С‡РµСЂРµР· С„СѓРЅРєС†РёСЋ РІРёРґР°: pwm_out_set(uint8_t channel_index, uint16_t value)
+* РќСѓР¶РЅРѕ СЃРґРµР»Р°С‚СЊ С‚РµСЃС‚РѕРІСѓСЋ РїСЂРѕС€РёРІРєСѓ, РєРѕС‚РѕСЂР°СЏ Р±СѓРґРµС‚ РґРµРјРѕРЅСЃС‚СЂРёСЂРѕРІР°С‚СЊ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р±РёР±Р»РёРѕС‚РµРєРё. 
+* Р РµР°Р»РёР·РѕРІР°С‚СЊ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ СЃР±РѕСЂРєРё РїСЂРѕС€РёРІРєРё РґР»СЏ РєР°Р¶РґРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°. 
+* Р§С‚Рѕ РґРѕР»Р¶РЅРѕ РїРѕР»СѓС‡РёС‚СЊСЃСЏ РІ СЂРµР·СѓР»СЊС‚Р°С‚Рµ:
+* Р‘РёР±Р»РёРѕС‚РµРєР° РґР»СЏ РЁРРњ РІ git СЂРµРїРѕР·РёС‚РѕСЂРёРё СЃ README СЃ РїСЂРёРјРµСЂРѕРј РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ Рё РёРЅСЃС‚СЂСѓРєС†РёСЏРјРё РїРѕ СЃР±РѕСЂРєРµ
+* Р”РµРјРѕРЅСЃС‚СЂР°С†РёРѕРЅРЅР°СЏ РїСЂРѕС€РёРІРєР° РґР»СЏ WB-PWM*, РёСЃРїРѕР»СЊР·СѓСЋС‰Р°СЏ Р±РёР±Р»РёРѕС‚РµРєСѓ РІ git СЂРµРїРѕР·РёС‚РѕСЂРёРё СЃ С‚СЂРµРјСЏ С‚Р°СЂРіРµС‚Р°РјРё: РїРѕРґ WB-PWM2, WB-PWM4, WB-PWM8
+* СЃ README СЃ РѕРїРёСЃР°РЅРёРµРј СЃР±РѕСЂРєРё Рё РґРѕР±Р°РІР»РµРЅРёСЏ РЅРѕРІРѕРіРѕ С‚Р°СЂРіРµС‚Р°
 */
 
 #include "pwm_lib.h"
 
+#define TIM_CCMR_CLR_MASK_1						0xff00
+#define TIM_CCMR_CLR_MASK_2						0x00ff
+#define TIM_PWM1_MODE									( 6 << 4 )
 
-void init_pwm_out( void ) {
+static pwm_out_t* pwms = NULL;
+static uint8_t pwm_count = 0;
+static uint16_t	timer_prescaler = 0xffff;
+static uint16_t	timer_counter_max = 0xffff;
+
+/** РЈСЃС‚Р°РЅРѕРІРєР° РїСЂРµРґРґРµР»РёС‚РµР»СЏ РґР»СЏ РёСЃРїРѕР»СЊР·СѓРµРјС‹С… С‚Р°Р№РёРµСЂРѕРІ
+*	\param[in]	value			- Р·РЅР°С‡РµРЅРёРµ РїСЂРµРґРґРµР»РёС‚РµР»СЏ РґР»СЏ РІСЃРµС… С‚Р°Р№РјРµСЂРѕРІ
+*/
+void set_pwm_prescaler( uint16_t value ) {
+	timer_prescaler = value;
+	for( uint8_t i = 0; i < pwm_count; i++ ) {
+		pwms[i].Tim->PSC = value;
+	}
 }
 
-/** Управление выходом pwm
-*	\param[in]		index		- номер выхода в таблице
-*	\param[in]		value		- значение шим на выходе
+/** Р§С‚РµРЅРёРµ РїСЂРµРґРґРµР»РёС‚РµР»СЏ РґР»СЏ РёСЃРїРѕР»СЊР·СѓРµРјС‹С… С‚Р°Р№РёРµСЂРѕРІ
+*	\return	- Р·РЅР°С‡РµРЅРёРµ РїСЂРµРґРґРµР»РёС‚РµР»СЏ С‚Р°Р№РјРµСЂРѕРІ
 */
-pwm_out_set(uint8_t channel_index, uint16_t value) {
+uint16_t get_pwm_prescaler( void ) {
+	return timer_prescaler;
+}
+
+/** РЈСЃС‚Р°РЅРѕРІРєР° РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ СЃС‡С‘С‚С‡РёРєР° РґР»СЏ РёСЃРїРѕР»СЊР·СѓРµРјС‹С… С‚Р°Р№РёРµСЂРѕРІ
+*	\param[in]	value			- РІРµСЂС…РЅРµРµ Р·РЅР°С‡РµРЅРёРµ СЃС‡С‘С‚С‡РёРєР° РґР»СЏ РІСЃРµС… С‚Р°Р№РјРµСЂРѕРІ
+*/
+void set_pwm_max( uint16_t value ) {
+	timer_counter_max = value;
+	for( uint8_t i = 0; i < pwm_count; i++ ) {
+		uint16_t temp = pwms[i].Tim->CR1;
+		pwms[i].Tim->CR1 = 0;
+		pwms[i].Tim->ARR = value;
+		pwms[i].Tim->CNT = 0;
+		pwms[i].Tim->CR1 = temp;
+	}	
+}
+
+/** Р§С‚РµРЅРёРµ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ СЃС‡С‘С‚С‡РёРєР° РґР»СЏ РёСЃРїРѕР»СЊР·СѓРµРјС‹С… С‚Р°Р№РёРµСЂРѕРІ
+*	\return	- Р·РЅР°С‡РµРЅРёРµ СЃС‡С‘С‚С‡РёРєР° РґР»СЏ РІСЃРµС… С‚Р°Р№РјРµСЂРѕРІ
+*/
+uint16_t get_pwm_max( void ) {
+	return timer_counter_max;
+}
+
+/** РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р№РјРµСЂРѕРІ
+*	\param[in]	config	- СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃС‚СЂСѓРєС‚СѓСЂСѓ-РєРѕРЅС„РёРіСѓСЂР°С‚РѕСЂ
+*	\return							- СЃС‚Р°С‚СѓСЃ РѕРїСЂРµР°С†РёРё 0 - СѓСЃРїРµС€РЅРѕ, РёРЅР°С‡Рµ - РѕС€РёР±РєР°
+*/
+static int init_tim( pwm_out_t* config ) {
+	config->Tim->CR1 = 0;
+	switch( config->Channel & ~TIM_CANNEL_N ) {
+		case TIM_CHANNEL_1 : {
+			config->Tim->CCR1		= 0;
+			config->Tim->CCMR1 	&= TIM_CCMR_CLR_MASK_1;
+			config->Tim->CCMR1 	|= TIM_PWM1_MODE;
+			config->Tim->CCER		&= ~0x000f;
+			if( config->Channel & TIM_CANNEL_N ) {
+				config->Tim->CCER	|= TIM_CCER_CC1NE;
+			}		
+			else {
+				config->Tim->CCER	|= TIM_CCER_CC1E;
+			}	
+			break;
+		}
+		case TIM_CHANNEL_2 : {
+			config->Tim->CCR2		= 0;			
+			config->Tim->CCMR1 &= TIM_CCMR_CLR_MASK_2;
+			config->Tim->CCMR1 |= TIM_PWM1_MODE << 8;	
+			config->Tim->CCER		&= 0xff0f;
+			if( config->Channel & TIM_CANNEL_N ) {
+				config->Tim->CCER	|= TIM_CCER_CC1NE << 4;
+			}		
+			else {
+				config->Tim->CCER	|= TIM_CCER_CC1E << 4;
+			}				
+			break;
+		}
+		case TIM_CHANNEL_3 : {
+			config->Tim->CCR3		= 0;			
+			config->Tim->CCMR2 &= TIM_CCMR_CLR_MASK_1;
+			config->Tim->CCMR2 |= TIM_PWM1_MODE;
+			config->Tim->CCER		&= 0xf0ff;
+			if( config->Channel & TIM_CANNEL_N ) {
+				config->Tim->CCER	|= TIM_CCER_CC1NE << 8;
+			}		
+			else {
+				config->Tim->CCER	|= TIM_CCER_CC1E << 8;
+			}			
+			break;
+		}
+		case TIM_CHANNEL_4 : {
+			config->Tim->CCR4		= 0;			
+			config->Tim->CCMR2 &= TIM_CCMR_CLR_MASK_2;
+			config->Tim->CCMR2 |= TIM_PWM1_MODE << 8;
+			config->Tim->CCER		&= 0x0fff;
+			if( config->Channel & TIM_CANNEL_N ) {
+				config->Tim->CCER	|= TIM_CCER_CC1NE << 12;
+			}		
+			else {
+				config->Tim->CCER	|= TIM_CCER_CC1E << 12;
+			}			
+			break;
+		}
+		default : return PWM_RES_FAULT;
+	}
+	config->Tim->BDTR = TIM_BDTR_MOE;
+	config->Tim->PSC = timer_prescaler;
+	config->Tim->ARR = timer_counter_max;
+	config->Tim->CR1 = TIM_CR1_CEN;
+	
+	return PWM_RES_OK;
+}
+
+/** РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РІС‹С…РѕРґРѕРІ РЁРРњ
+*	\param[in]	pwm				-	СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°СЃСЃРёРІ РѕРїРёСЃР°С‚РµР»РµР№ РІС‹С…РѕРґРѕРІ
+*	\param[in]	count			-	РєРѕР»РёС‡РµСЃС‚РІРѕ РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РІС‹С…РѕРґРѕРІ
+*	\return								- СЃС‚Р°С‚СѓСЃ РѕРїСЂРµР°С†РёРё 0 - СѓСЃРїРµС€РЅРѕ, РёРЅР°С‡Рµ - РѕС€РёР±РєР°
+*/
+int init_pwm_out( pwm_out_t* pwm, uint8_t count ) {
+	
+	if( NULL == pwm ) return PWM_RES_FAULT;
+	if( 0 == count ) return PWM_RES_FAULT;
+	
+	pwms = pwm;
+	pwm_count = count;
+	
+	for( uint8_t i = 0; i < pwm_count; i++ ) {
+
+		if( NULL == pwms[i].Tim ) return PWM_RES_FAULT;		
+		
+		uint8_t idx = 0;
+		uint16_t pin = pwms[i].Pin;
+		while(( pin & 0x0001 ) == 0 ) {
+			idx++;
+			pin >>= 1;
+		}		
+		
+		switch(( uint32_t )pwms[i].Port ) {
+			case ( uint32_t )GPIOA : {
+				RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+				break;
+			}
+			case ( uint32_t )GPIOB : {
+				RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
+				break;
+			}
+			case ( uint32_t )GPIOC : {
+				RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
+				break;
+			}
+			case ( uint32_t )GPIOD : {
+				RCC->AHBENR |= RCC_AHBENR_GPIODEN;
+				break;
+			}			
+		}
+		
+		pwms[i].Port->BRR 		= 	pwms[i].Pin;
+		pwms[i].Port->MODER 	&= 	~( 3 << ( idx * 2 ));
+		pwms[i].Port->MODER 	|= 	( 2 << ( idx * 2 ));		
+		pwms[i].Port->OTYPER 	&= 	~pwms[i].Pin;
+		pwms[i].Port->OSPEEDR &= 	~( 3 << ( idx * 2 ));
+		pwms[i].Port->PUPDR 	&= 	~( 3 << ( idx * 2 ));
+		
+		if( idx < 8 ) {
+			pwms[i].Port->AFR[0] &= ~( 0x000f << ( idx * 4 ));
+			pwms[i].Port->AFR[0] |= pwms[i].Alter << ( idx * 4 );
+		}
+		else {
+			pwms[i].Port->AFR[1] &= ~( 0x000f << (( idx - 8 ) * 4 ));
+			pwms[i].Port->AFR[1] |= pwms[i].Alter << (( idx - 8 ) * 4 );			
+		}
+		switch(( uint32_t )pwm[i].Tim ) {
+			case ( uint32_t )TIM1 : {
+				RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
+				if( PWM_RES_OK != init_tim( &pwms[i] )) return PWM_RES_FAULT;
+				break;
+			}
+			case ( uint32_t )TIM3 : {
+				RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+				if( PWM_RES_OK != init_tim( &pwms[i] )) return PWM_RES_FAULT;				
+				break;
+			}
+			case ( uint32_t )TIM14 : {
+				if(( pwms[i].Channel & ~TIM_CANNEL_N ) != TIM_CHANNEL_1 ) return PWM_RES_FAULT;
+				RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
+				if( PWM_RES_OK != init_tim( &pwms[i] )) return PWM_RES_FAULT;				
+				break;
+			}	
+			case ( uint32_t )TIM15 : {
+//				if((( pwms[i].Channel & ~TIM_CANNEL_N ) != TIM_CHANNEL_1 ) || (( pwms[i].Channel & ~TIM_CANNEL_N ) != TIM_CHANNEL_2 )) return PWM_RES_FAULT;
+				RCC->APB2ENR |= RCC_APB2ENR_TIM15EN;
+				if( PWM_RES_OK != init_tim( &pwms[i] )) return PWM_RES_FAULT;				
+				break;
+			}
+			case ( uint32_t )TIM16 : {
+				if(( pwms[i].Channel & ~TIM_CANNEL_N ) != TIM_CHANNEL_1 ) return PWM_RES_FAULT;
+				RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
+				if( PWM_RES_OK != init_tim( &pwms[i] )) return PWM_RES_FAULT;				
+				break;
+			}
+			case ( uint32_t )TIM17 : {
+				if(( pwms[i].Channel & ~TIM_CANNEL_N ) != TIM_CHANNEL_1 ) return PWM_RES_FAULT;
+				RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
+				if( PWM_RES_OK != init_tim( &pwms[i] )) return PWM_RES_FAULT;				
+				break;
+			}				
+		}		
+	}
+	return count;
+}
+
+/** РЈСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёСЏ РЁРРњ РґР»СЏ СѓРєР°Р·Р°РЅРЅРѕРіРѕ РІС‹С…РѕРґР°
+*	\param[in]	index			- РЅРѕРјРµСЂ РІС‹С…РѕРґР° РІ РјР°СЃСЃРёРІРµ РѕРїРёСЃР°С‚РµР»РµР№
+*	\param[in]	value			-	Р·РЅР°С‡РµРЅРёРµ РЁРРњ РґР»СЏ РІС‹С…РѕРґР°
+*	\return								- СЃС‚Р°С‚СѓСЃ РѕРїСЂРµР°С†РёРё 0 - СѓСЃРїРµС€РЅРѕ, РёРЅР°С‡Рµ - РѕС€РёР±РєР°
+*/
+int pwm_out_set( uint8_t index, uint16_t value ) {
+	if( NULL == pwms ) return PWM_RES_FAULT;
+	if( index >= pwm_count ) return PWM_RES_FAULT;
+	
+	switch( pwms[index].Channel & ~TIM_CANNEL_N ) {
+		case TIM_CHANNEL_1 : {
+			pwms[index].Tim->CCR1 = value;
+			break;
+		}
+		case TIM_CHANNEL_2 : {
+			pwms[index].Tim->CCR2 = value;		
+			break;
+		}	
+		case TIM_CHANNEL_3 : {
+			pwms[index].Tim->CCR3 = value;		
+			break;
+		}
+		case TIM_CHANNEL_4 : {
+			pwms[index].Tim->CCR4 = value;		
+			break;
+		}		
+	}
+	return PWM_RES_OK;
 }
